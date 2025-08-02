@@ -1,13 +1,33 @@
+import { useActionState, useContext, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Inputs from "../../src/components/Inputs";
-import { Link } from "react-router-dom";
+import { login } from "../../actions/auth";
+import { UserContext } from "../../context/UserContext";
 
 function Login() {
+  const [state, action, isPending] = useActionState(login, undefined);
+  const { refreshUser } = useContext(UserContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (state?.success) {
+      refreshUser();
+      navigate("/");
+    }
+  }, [state, navigate]);
+
   return (
-    <div className=" flex justify-center items-center">
-      <div className="w-1/3 ">
-        <h1 className="title"> Login</h1>
-        <form>
-          <Inputs title="Email" htmlFor="email" type="email" name="email" />
+    <div className="flex justify-center items-center  bg-gray-100">
+      <div className="bg-white mt-5 py-5 px-8 rounded shadow-md w-full max-w-md">
+        <h1 className="title text-center">Login</h1>
+        <form action={action} className="flex flex-col">
+          <Inputs
+            title="Email"
+            htmlFor="email"
+            type="email"
+            name="email"
+            defaultValue={state?.fieldData?.email}
+          />
           <Inputs
             title="Password"
             htmlFor="password"
@@ -15,11 +35,22 @@ function Login() {
             name="password"
           />
 
-          <button className="btn-primary cursor-pointer">Login</button>
+          {state?.error && <p className="text-red-600">{state?.error}</p>}
+          {state?.success && (
+            <p className="text-green-600">Log in successful!</p>
+          )}
 
-          <p>
+          <button
+            type="submit"
+            disabled={isPending}
+            className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition mt-5"
+          >
+            {isPending ? "Loading..." : "Login"}
+          </button>
+
+          <p className="mt-4 text-center text-sm">
             Don't have an account? {""}
-            <Link to="/register" className="text-link">
+            <Link to="/register" className="text-blue-600 underline">
               Register Here
             </Link>
           </p>
